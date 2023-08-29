@@ -5,6 +5,7 @@ import https from "httpolyglot";
 import fs from "fs";
 import path from "path";
 const __dirname = path.resolve();
+const port = process.env.PORT || 3000;
 
 import { Server } from "socket.io";
 import mediasoup from "mediasoup";
@@ -28,8 +29,8 @@ const options = {
 };
 
 const httpsServer = https.createServer(options, app);
-httpsServer.listen(3000, () => {
-  console.log("listening on port: " + 3000);
+httpsServer.listen(PORT, () => {
+  console.log("listening on port: " + PORT);
 });
 
 const io = new Server(httpsServer);

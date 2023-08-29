@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 const app = express();
 
@@ -32,6 +35,8 @@ const httpsServer = https.createServer(options, app);
 httpsServer.listen(PORT, () => {
   console.log("listening on port: " + PORT);
 });
+
+// console.log(, process.env.A_IP);
 
 const io = new Server(httpsServer);
 
@@ -372,8 +377,8 @@ const createWebRtcTransport = async (router) => {
       const webRtcTransport_options = {
         listenIps: [
           {
-            ip: "0.0.0.0",
-            announcedIp: "127.0.0.1",
+            ip: process.env.WEBRTC_LISTEN_IP,
+            announcedIp: process.env.A_IP || undefined,
           },
         ],
         enableUdp: true,

@@ -5,7 +5,7 @@ import https from "httpolyglot";
 import fs from "fs";
 import path from "path";
 const __dirname = path.resolve();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 import { Server } from "socket.io";
 import mediasoup from "mediasoup";

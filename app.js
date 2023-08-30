@@ -4,7 +4,7 @@ dotenv.config();
 import express from "express";
 const app = express();
 
-import https from "http";
+import https from "httpolyglot";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -29,8 +29,8 @@ app.get("*", (req, res, next) => {
 app.use("/sfu/:room", express.static(path.join(__dirname, "public")));
 
 const options = {
-  //   key: fs.readFileSync("./server/ssl/key.pem", "utf-8"),
-  //   cert: fs.readFileSync("./server/ssl/cert.pem", "utf-8"),
+  key: fs.readFileSync("./server/ssl/key.pem", "utf-8"),
+  cert: fs.readFileSync("./server/ssl/cert.pem", "utf-8"),
 };
 
 const httpsServer = https.createServer(options, app);
@@ -60,11 +60,26 @@ const getLocalIp = () => {
   return localIp;
 };
 
-// console.log(, process.env.A_IP);
-
 const io = new Server(httpsServer);
 
 const connections = io.of("/mediasoup");
+
+let localIp = getLocalIp();
+
+if (!localIp) {
+  https.get(
+    {
+      host: "api.ipify.org",
+      port: 80,
+      path: "/",
+    },
+    (resp) => {
+      resp.on("data", (ip) => {
+        localIp = ip.toString();
+      });
+    }
+  );
+}
 
 let worker;
 let rooms = {};
@@ -448,7 +463,7 @@ const createWebRtcTransport = async (router) => {
         listenIps: [
           {
             ip: "0.0.0.0",
-            announcedIp: getLocalIp(),
+            announcedIp: localIp,
           },
         ],
         enableUdp: true,

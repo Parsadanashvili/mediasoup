@@ -8,6 +8,7 @@ import https from "http";
 import fs from "fs";
 import path from "path";
 import os from "os";
+const ifaces = os.networkInterfaces();
 const __dirname = path.resolve();
 const PORT = process.env.PORT || 3000;
 

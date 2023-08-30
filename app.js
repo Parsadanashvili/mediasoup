@@ -46,9 +46,15 @@ function getListenIps() {
       for (const [key, addresses] of Object.entries(networkInterfaces)) {
         addresses.forEach((address) => {
           if (address.family === "IPv4") {
-            listenIps.push({ ip: address.address, announcedIp: null });
+            listenIps.push({
+              ip: address.address,
+              announcedIp: process.env.A_IP,
+            });
           } else if (address.family === "IPv6" && address.address[0] !== "f") {
-            listenIps.push({ ip: address.address, announcedIp: null });
+            listenIps.push({
+              ip: address.address,
+              announcedIp: null,
+            });
           }
         });
       }

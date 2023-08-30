@@ -76,7 +76,7 @@ let consumers = [];
 const createWorker = async () => {
   worker = await mediasoup.createWorker({
     rtcMinPort: 40000,
-    rtcMaxPort: 40100,
+    rtcMaxPort: 49999,
     logLevel: "error",
     logTags: [
       "info",

@@ -8,7 +8,6 @@ import https from "httpolyglot";
 import fs from "fs";
 import path from "path";
 import os from "os";
-const ifaces = os.networkInterfaces();
 const __dirname = path.resolve();
 const PORT = process.env.PORT || 3000;
 
@@ -38,48 +37,34 @@ httpsServer.listen(PORT, () => {
   console.log("listening on port: " + PORT);
 });
 
-const getLocalIp = () => {
-  let localIp = "127.0.0.1";
-  let checkIp = true;
-  Object.keys(ifaces).forEach((ifname) => {
-    for (const iface of ifaces[ifname]) {
-      // Ignore IPv6 and 127.0.0.1
-      if (
-        iface.family !== "IPv4" ||
-        iface.internal !== false ||
-        checkIp === false
-      ) {
-        continue;
+function getListenIps() {
+  const listenIps = [];
+  if (typeof window === "undefined") {
+    const networkInterfaces = os.networkInterfaces();
+    const ips = [];
+    if (networkInterfaces) {
+      for (const [key, addresses] of Object.entries(networkInterfaces)) {
+        addresses.forEach((address) => {
+          if (address.family === "IPv4") {
+            listenIps.push({ ip: address.address, announcedIp: null });
+          } else if (address.family === "IPv6" && address.address[0] !== "f") {
+            listenIps.push({ ip: address.address, announcedIp: null });
+          }
+        });
       }
-      // Set the local ip to the first IPv4 address found and exit the loop
-      localIp = iface.address;
-      checkIp = false;
-      return;
     }
-  });
-  return localIp;
-};
+  }
+  if (listenIps.length === 0) {
+    listenIps.push({ ip: "127.0.0.1", announcedIp: null });
+  }
+  return listenIps;
+}
+
+console.log(getListenIps());
 
 const io = new Server(httpsServer);
 
 const connections = io.of("/mediasoup");
-
-let localIp = getLocalIp();
-
-if (!localIp) {
-  https.get(
-    {
-      host: "api.ipify.org",
-      port: 80,
-      path: "/",
-    },
-    (resp) => {
-      resp.on("data", (ip) => {
-        localIp = ip.toString();
-      });
-    }
-  );
-}
 
 let worker;
 let rooms = {};
@@ -460,12 +445,7 @@ const createWebRtcTransport = async (router) => {
   return new Promise(async (resolve, reject) => {
     try {
       const webRtcTransport_options = {
-        listenIps: [
-          {
-            ip: localIp,
-            announcedIp: null,
-          },
-        ],
+        listenIps: getListenIps(),
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,

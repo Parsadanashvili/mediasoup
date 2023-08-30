@@ -7,6 +7,7 @@ const app = express();
 import https from "http";
 import fs from "fs";
 import path from "path";
+import os from "os";
 const __dirname = path.resolve();
 const PORT = process.env.PORT || 3000;
 
@@ -35,6 +36,28 @@ const httpsServer = https.createServer(options, app);
 httpsServer.listen(PORT, () => {
   console.log("listening on port: " + PORT);
 });
+
+const getLocalIp = () => {
+  let localIp = "127.0.0.1";
+  let checkIp = true;
+  Object.keys(ifaces).forEach((ifname) => {
+    for (const iface of ifaces[ifname]) {
+      // Ignore IPv6 and 127.0.0.1
+      if (
+        iface.family !== "IPv4" ||
+        iface.internal !== false ||
+        checkIp === false
+      ) {
+        continue;
+      }
+      // Set the local ip to the first IPv4 address found and exit the loop
+      localIp = iface.address;
+      checkIp = false;
+      return;
+    }
+  });
+  return localIp;
+};
 
 // console.log(, process.env.A_IP);
 
@@ -377,8 +400,8 @@ const createWebRtcTransport = async (router) => {
       const webRtcTransport_options = {
         listenIps: [
           {
-            ip: process.env.WEBRTC_LISTEN_IP,
-            announcedIp: process.env.A_IP || undefined,
+            ip: "0.0.0.0",
+            announcedIp: getLocalIp(),
           },
         ],
         enableUdp: true,
